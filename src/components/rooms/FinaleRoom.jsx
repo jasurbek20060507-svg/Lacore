@@ -181,7 +181,6 @@ export default function FinaleRoom({ data, position }) {
         color="#fda4af"
         anchorX="center"
         anchorY="middle"
-        font="https://fonts.gstatic.com/s/playfairdisplay/v37/nuFiD-vYSZviVYUb_rj3ij__anPXDTzYgEM86xQ.woff2"
         maxWidth={7}
         textAlign="center"
       >
@@ -194,7 +193,6 @@ export default function FinaleRoom({ data, position }) {
         color="#c9a882"
         anchorX="center"
         anchorY="middle"
-        font="https://fonts.gstatic.com/s/inter/v18/UcCo3FwrK3iLTcviYwY.woff2"
         maxWidth={6}
         textAlign="center"
       >
@@ -216,7 +214,6 @@ export default function FinaleRoom({ data, position }) {
           maxWidth={3.5}
           textAlign="center"
           lineHeight={1.8}
-          font="https://fonts.gstatic.com/s/playfairdisplay/v37/nuFiD-vYSZviVYUb_rj3ij__anPXDTzYgEM86xQ.woff2"
         >
           {data.loveLetter || ""}
         </Text>

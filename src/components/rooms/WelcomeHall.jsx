@@ -3,24 +3,8 @@ import { useFrame } from '@react-three/fiber'
 import { Text, Float } from '@react-three/drei'
 import * as THREE from 'three'
 
-// Shared materials
-const wallMaterial = new THREE.MeshStandardMaterial({
-  color: '#f5ede4',
-  roughness: 0.7,
-  metalness: 0.05,
-})
+// WelcomeHall Room Component
 
-const floorMaterial = new THREE.MeshStandardMaterial({
-  color: '#d4b896',
-  roughness: 0.3,
-  metalness: 0.1,
-})
-
-const ceilingMaterial = new THREE.MeshStandardMaterial({
-  color: '#f0e6d8',
-  roughness: 0.8,
-  metalness: 0,
-})
 
 function ArchDecor({ position, rotation = [0, 0, 0] }) {
   return (
@@ -134,25 +118,25 @@ export default function WelcomeHall({ data, position }) {
       {/* Ceiling */}
       <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, roomHeight, 0]}>
         <planeGeometry args={[roomWidth, roomLength]} />
-        <primitive object={ceilingMaterial} attach="material" />
+        <meshStandardMaterial color="#f0e6d8" roughness={0.8} />
       </mesh>
 
       {/* Back wall */}
       <mesh position={[0, roomHeight / 2, -roomLength / 2]}>
         <planeGeometry args={[roomWidth, roomHeight]} />
-        <primitive object={wallMaterial} attach="material" />
+        <meshStandardMaterial color="#f5ede4" roughness={0.7} metalness={0.05} />
       </mesh>
 
       {/* Left wall */}
       <mesh position={[-roomWidth / 2, roomHeight / 2, 0]} rotation={[0, Math.PI / 2, 0]}>
         <planeGeometry args={[roomLength, roomHeight]} />
-        <primitive object={wallMaterial} attach="material" />
+        <meshStandardMaterial color="#f5ede4" roughness={0.7} metalness={0.05} />
       </mesh>
 
       {/* Right wall */}
       <mesh position={[roomWidth / 2, roomHeight / 2, 0]} rotation={[0, -Math.PI / 2, 0]}>
         <planeGeometry args={[roomLength, roomHeight]} />
-        <primitive object={wallMaterial} attach="material" />
+        <meshStandardMaterial color="#f5ede4" roughness={0.7} metalness={0.05} />
       </mesh>
 
       {/* Front wall with opening */}
@@ -171,24 +155,20 @@ export default function WelcomeHall({ data, position }) {
       <pointLight position={[2, 2.5, -1]} intensity={0.5} color="#fbbf24" distance={6} decay={2} />
 
       {/* Spotlight on the title wall */}
-      <spotLight
-        position={[0, 3.8, 1]}
-        target-position={[0, 2, -3]}
-        angle={0.4}
-        penumbra={0.5}
-        intensity={2}
+      <pointLight
+        position={[0, 3.5, -2]}
+        intensity={2.5}
         color="#fff5f0"
-        distance={8}
+        distance={10}
       />
 
       {/* Welcome text on back wall */}
       <Text
         position={[0, 2.6, -3.45]}
-        fontSize={0.5}
+        fontSize={0.45}
         color="#c9a882"
         anchorX="center"
         anchorY="middle"
-        font="https://fonts.gstatic.com/s/playfairdisplay/v37/nuFiD-vYSZviVYUb_rj3ij__anPXDTzYgEM86xQ.woff2"
         maxWidth={6}
       >
         {data.welcomeTitle || 'Sevgi Muzeyi'}
@@ -200,7 +180,6 @@ export default function WelcomeHall({ data, position }) {
         color="#f43f5e"
         anchorX="center"
         anchorY="middle"
-        font="https://fonts.gstatic.com/s/playfairdisplay/v37/nuFiD-vYSZviVYUb_rj3ij__anPXDTzYgEM86xQ.woff2"
         maxWidth={6}
       >
         {data.coupleNames}
@@ -214,7 +193,6 @@ export default function WelcomeHall({ data, position }) {
         anchorY="middle"
         maxWidth={5}
         textAlign="center"
-        font="https://fonts.gstatic.com/s/inter/v18/UcCo3FwrK3iLTcviYwY.woff2"
       >
         {data.welcomeMessage}
       </Text>

@@ -74,7 +74,6 @@ function PhotoFrame({ photo, position, rotation = [0, 0, 0], wallSide = 'left' }
         color="#ffffff"
         anchorX="center"
         anchorY="middle"
-        font="https://fonts.gstatic.com/s/playfairdisplay/v37/nuFiD-vYSZviVYUb_rj3ij__anPXDTzYgEM86xQ.woff2"
       >
         {photo.id}
       </Text>
@@ -84,7 +83,6 @@ function PhotoFrame({ photo, position, rotation = [0, 0, 0], wallSide = 'left' }
         color="#ffffff99"
         anchorX="center"
         anchorY="middle"
-        font="https://fonts.gstatic.com/s/inter/v18/UcCo3FwrK3iLTcviYwY.woff2"
       >
         {photo.title}
       </Text>
@@ -99,18 +97,6 @@ function PhotoFrame({ photo, position, rotation = [0, 0, 0], wallSide = 'left' }
         />
       </mesh>
 
-      {/* Picture light above frame */}
-      <spotLight
-        position={[0, 0.8, 0.5]}
-        target-position={[0, 0, 0]}
-        angle={0.6}
-        penumbra={0.8}
-        intensity={hovered ? 2 : 1}
-        color="#fff5e6"
-        distance={3}
-        decay={2}
-      />
-
       {/* Info label below frame */}
       <mesh position={[0, -(frameHeight / 2 + borderSize + 0.15), 0.02]}>
         <planeGeometry args={[0.8, 0.12]} />
@@ -122,7 +108,6 @@ function PhotoFrame({ photo, position, rotation = [0, 0, 0], wallSide = 'left' }
         color="#c9a882"
         anchorX="center"
         anchorY="middle"
-        font="https://fonts.gstatic.com/s/inter/v18/UcCo3FwrK3iLTcviYwY.woff2"
       >
         {photo.title} • {photo.date}
       </Text>
@@ -215,7 +200,6 @@ export default function MemoryGallery({ data, position }) {
         color="#c9a882"
         anchorX="center"
         anchorY="middle"
-        font="https://fonts.gstatic.com/s/playfairdisplay/v37/nuFiD-vYSZviVYUb_rj3ij__anPXDTzYgEM86xQ.woff2"
       >
         ✦ Xotiralar Galereyasi ✦
       </Text>

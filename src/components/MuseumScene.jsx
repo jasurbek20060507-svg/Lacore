@@ -12,10 +12,11 @@ export default function MuseumScene({ data }) {
   return (
     <>
       {/* Ambient and directional lighting */}
-      <ambientLight intensity={0.3} color="#ffe4e6" />
+      <ambientLight intensity={1.2} color="#fff1f2" />
+      <hemisphereLight args={['#fff5ea', '#4a1525', 0.8]} />
       <directionalLight
-        position={[5, 8, 3]}
-        intensity={0.5}
+        position={[5, 12, 5]}
+        intensity={1.5}
         color="#fff5f5"
         castShadow
         shadow-mapSize={[1024, 1024]}
@@ -27,7 +28,7 @@ export default function MuseumScene({ data }) {
       />
 
       {/* Fog for depth */}
-      <fog attach="fog" args={['#1a0a10', 15, 45]} />
+      <fog attach="fog" args={['#1a0a15', 25, 75]} />
 
       {/* Museum rooms laid out along Z axis */}
       {/* Welcome Hall: z = 5 to z = -2 */}

@@ -59,7 +59,6 @@ function TimelineMarker({ item, position, index }) {
           color="#fbbf24"
           anchorX="center"
           anchorY="middle"
-          font="https://fonts.gstatic.com/s/inter/v18/UcCo3FwrK3iLTcviYwY.woff2"
         >
           {item.date}
         </Text>
@@ -71,7 +70,6 @@ function TimelineMarker({ item, position, index }) {
           color="#fda4af"
           anchorX="center"
           anchorY="middle"
-          font="https://fonts.gstatic.com/s/playfairdisplay/v37/nuFiD-vYSZviVYUb_rj3ij__anPXDTzYgEM86xQ.woff2"
           maxWidth={1.3}
         >
           {item.title}
@@ -86,19 +84,9 @@ function TimelineMarker({ item, position, index }) {
           anchorY="middle"
           maxWidth={1.3}
           textAlign="center"
-          font="https://fonts.gstatic.com/s/inter/v18/UcCo3FwrK3iLTcviYwY.woff2"
         >
           {item.description}
         </Text>
-
-        {/* Card glow */}
-        <pointLight
-          position={[0, 0, 0.3]}
-          intensity={0.3}
-          color="#fda4af"
-          distance={2}
-          decay={2}
-        />
       </group>
     </group>
   )
@@ -141,7 +129,6 @@ export default function LoveStoryRoom({ data, position }) {
         color="#fda4af"
         anchorX="center"
         anchorY="middle"
-        font="https://fonts.gstatic.com/s/playfairdisplay/v37/nuFiD-vYSZviVYUb_rj3ij__anPXDTzYgEM86xQ.woff2"
       >
         ✦ Sevgi Hikoyamiz ✦
       </Text>

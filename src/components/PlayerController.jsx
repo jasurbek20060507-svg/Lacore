@@ -30,7 +30,7 @@ export default function PlayerController() {
 
   // Initialize camera position
   useEffect(() => {
-    camera.position.set(0, PLAYER_HEIGHT, 5)
+    camera.position.set(0, PLAYER_HEIGHT, 3)
     camera.rotation.set(0, 0, 0)
     euler.current.set(0, 0, 0, 'YXZ')
   }, [camera])

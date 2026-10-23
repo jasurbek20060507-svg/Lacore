@@ -35,7 +35,7 @@ export default function App() {
         <Canvas
           shadows
           dpr={[1, isMobile ? 1.5 : 2]}
-          camera={{ fov: 65, near: 0.1, far: 100, position: [0, 1.6, 8] }}
+          camera={{ fov: 65, near: 0.1, far: 100, position: [0, 1.6, 3] }}
           style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
           gl={{ antialias: !isMobile, powerPreference: 'high-performance' }}
         >
