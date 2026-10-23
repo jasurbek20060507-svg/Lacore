@@ -1,0 +1,106 @@
+{
+  "museumId": "ali-malika",
+  "coupleNames": "Ali ❤️ Malika",
+  "welcomeTitle": "Sevgi Muzeyi",
+  "welcomeMessage": "Bizning sevgi hikoyamizga xush kelibsiz",
+  "welcomeSubtext": "Birga bosgan har bir qadamimiz — abadiy xotira",
+  "theme": "romantic",
+  "music": "/audio/romantic.mp3",
+  "photos": [
+    {
+      "id": 1,
+      "image": "",
+      "title": "Birinchi uchrashuv",
+      "date": "2023-02-14",
+      "description": "Hammasi shu kundan boshlangan... Ko'zlarimiz birinchi marta to'qnashgan lahza."
+    },
+    {
+      "id": 2,
+      "image": "",
+      "title": "Birinchi sana",
+      "date": "2023-03-08",
+      "description": "Birinchi uchrashuvimiz — qahvaxonada soatlab suhbatlashdik."
+    },
+    {
+      "id": 3,
+      "image": "",
+      "title": "Birinchi rasm",
+      "date": "2023-04-15",
+      "description": "Birinchi birgalikdagi rasmimiz. Bu lahzani hech unutmayman."
+    },
+    {
+      "id": 4,
+      "image": "",
+      "title": "Bahor sayr",
+      "date": "2023-05-20",
+      "description": "Gullar orasida sayr qilgan ajoyib kun."
+    },
+    {
+      "id": 5,
+      "image": "",
+      "title": "Tug'ilgan kun",
+      "date": "2023-07-10",
+      "description": "Sening tug'ilgan kuning — eng maxsus bayram."
+    },
+    {
+      "id": 6,
+      "image": "",
+      "title": "Yoz ta'tili",
+      "date": "2023-08-05",
+      "description": "Dengiz bo'yidagi unutilmas ta'til kunlarimiz."
+    },
+    {
+      "id": 7,
+      "image": "",
+      "title": "Kuz romantikasi",
+      "date": "2023-10-12",
+      "description": "Sariq barglar ostida qo'l ushlashib yurgan lahzalar."
+    },
+    {
+      "id": 8,
+      "image": "",
+      "title": "Yangi yil",
+      "date": "2023-12-31",
+      "description": "Yangi yilni birga kutib oldik — eng baxtli tun."
+    },
+    {
+      "id": 9,
+      "image": "",
+      "title": "Yubiley",
+      "date": "2024-02-14",
+      "description": "Bir yillik yubileyimiz — sevgimiz yanada mustahkamlandi."
+    },
+    {
+      "id": 10,
+      "image": "",
+      "title": "Kelajak rejalar",
+      "date": "2024-06-01",
+      "description": "Birga quradigan kelajagimiz — eng go'zal orzu."
+    }
+  ],
+  "loveStory": [
+    {
+      "title": "Birinchi uchrashuv",
+      "date": "2023-02-14",
+      "description": "Tasodifan uchrashgan edik, ammo taqdirning o'zi bizni birlashtirdi."
+    },
+    {
+      "title": "Sevgi e'trofi",
+      "date": "2023-06-15",
+      "description": "\"Seni sevaman\" degan so'zlar birinchi marta aytilgan kun."
+    },
+    {
+      "title": "Birinchi sayohat",
+      "date": "2023-08-05",
+      "description": "Birinchi birgalikdagi sayohatimiz — yangi joylar, yangi xotiralar."
+    },
+    {
+      "title": "Yubiley",
+      "date": "2024-02-14",
+      "description": "Bir yillik yubiley — sevgimiz sinab ko'rildi va yanada mustahkamlandi."
+    }
+  ],
+  "finalMessage": "Sen hayotimdagi eng go'zal tasodifsan ❤️",
+  "finalSubtext": "Seni abadiy sevaman, bugun, ertaga va har doim...",
+  "loveLetter": "Azizim, sen mening hayotimga nur olib keldingsan. Har bir kunim sen bilan yanada go'zal. Senga minnatdorman har bir lahza uchun. Seni juda sevaman! ❤️"
+}
