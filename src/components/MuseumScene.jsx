@@ -7,8 +7,16 @@ import LoveStoryRoom from './rooms/LoveStoryRoom'
 import FinaleRoom from './rooms/FinaleRoom'
 import PlayerController from './PlayerController'
 import Particles from './Particles'
+import CoupleSyncManager from './characters/CoupleSyncManager'
 
-export default function MuseumScene({ data }) {
+export default function MuseumScene({
+  data,
+  myRole = 'boy',
+  partnerData = null,
+  partnerConnected = false,
+  isDancing = false,
+  onProximityChange = () => {},
+}) {
   return (
     <>
       {/* Ambient and directional lighting */}
@@ -29,6 +37,15 @@ export default function MuseumScene({ data }) {
 
       {/* Fog for depth */}
       <fog attach="fog" args={['#1a0a15', 25, 75]} />
+
+      {/* 3D Couple Characters & Multiplayer Avatar */}
+      <CoupleSyncManager
+        myRole={myRole}
+        partnerData={partnerData}
+        partnerConnected={partnerConnected}
+        isDancing={isDancing}
+        onProximityChange={onProximityChange}
+      />
 
       {/* Museum rooms laid out along Z axis */}
       {/* Welcome Hall: z = 5 to z = -2 */}

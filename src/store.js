@@ -26,7 +26,19 @@ export const useMuseumStore = create((set) => ({
     typeof navigator !== 'undefined' ? navigator.userAgent : ''
   ),
 
-  // Player position for room transitions
-  currentRoom: 'welcome', // 'welcome' | 'gallery' | 'story' | 'finale'
-  setCurrentRoom: (room) => set({ currentRoom: room }),
+  // Admin panel
+  adminOpen: false,
+  toggleAdmin: () => set((s) => ({ adminOpen: !s.adminOpen })),
+
+  // Active music
+  activeMusicTrack: 'Izzat Shukurov — Devonangman',
+  setActiveMusicTrack: (track) => set({ activeMusicTrack: track }),
+
+  // Dance / Waltz
+  isDancing: false,
+  setIsDancing: (val) => set({ isDancing: val }),
+
+  // Custom client museum data
+  customData: null,
+  setCustomData: (data) => set({ customData: data }),
 }))

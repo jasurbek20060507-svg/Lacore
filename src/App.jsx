@@ -1,7 +1,7 @@
 import React, { useState, useEffect, Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { useMuseumStore } from './store'
-import museumData from './data/museum.json'
+import initialMuseumData from './data/museum.json'
 import LoadingScreen from './components/LoadingScreen'
 import WelcomeScreen from './components/WelcomeScreen'
 import MuseumScene from './components/MuseumScene'
@@ -9,28 +9,69 @@ import GameUI from './components/GameUI'
 import PhotoOverlay from './components/PhotoOverlay'
 import FinaleScreen from './components/FinaleScreen'
 import MobileControls from './components/MobileControls'
+import WaltzModal from './components/WaltzModal'
+import AdminPanel from './components/AdminPanel'
+import { useMultiplayer } from './multiplayer/useMultiplayer'
 
 export default function App() {
-  const { gameState, setGameState, isMobile, activePhoto, setLoadingProgress } = useMuseumStore()
+  const { gameState, setGameState, isMobile, activePhoto, setLoadingProgress, adminOpen, toggleAdmin } = useMuseumStore()
 
+  // Dynamic Museum data (from localStorage if edited by admin, or initial JSON)
+  const [currentMuseumData, setCurrentMuseumData] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('custom_museum_data')
+      if (saved) {
+        try {
+          return JSON.parse(saved)
+        } catch (e) {}
+      }
+    }
+    return initialMuseumData
+  })
+
+  // Multiplayer Hook
+  const {
+    roomId,
+    myRole,
+    partnerRole,
+    partnerConnected,
+    partnerData,
+    sendMyTransform,
+    waltzStatus,
+    inviteWaltz,
+    acceptWaltz,
+    stopWaltz,
+  } = useMultiplayer()
+
+  // Make sendMyTransform accessible to PlayerController
   useEffect(() => {
-    // Simulate loading
+    window.__sendMyTransform = sendMyTransform
+    return () => {
+      window.__sendMyTransform = null
+    }
+  }, [sendMyTransform])
+
+  // Distance proximity for waltz prompt
+  const [canInviteWaltz, setCanInviteWaltz] = useState(false)
+
+  // Loading simulation
+  useEffect(() => {
     let progress = 0
     const interval = setInterval(() => {
-      progress += Math.random() * 15 + 5
+      progress += Math.random() * 20 + 10
       if (progress >= 100) {
         progress = 100
         clearInterval(interval)
-        setTimeout(() => setGameState('welcome'), 500)
+        setTimeout(() => setGameState('welcome'), 400)
       }
       setLoadingProgress(Math.min(progress, 100))
-    }, 200)
+    }, 150)
     return () => clearInterval(interval)
   }, [])
 
   return (
     <div className="w-full h-full relative no-select">
-      {/* 3D Canvas - always mounted for preloading */}
+      {/* 3D Canvas */}
       {(gameState === 'playing' || gameState === 'finale') && (
         <Canvas
           shadows
@@ -40,24 +81,53 @@ export default function App() {
           gl={{ antialias: !isMobile, powerPreference: 'high-performance' }}
         >
           <Suspense fallback={null}>
-            <MuseumScene data={museumData} />
+            <MuseumScene
+              data={currentMuseumData}
+              myRole={myRole}
+              partnerData={partnerData}
+              partnerConnected={partnerConnected}
+              isDancing={waltzStatus === 'dancing'}
+              onProximityChange={setCanInviteWaltz}
+            />
           </Suspense>
         </Canvas>
       )}
 
       {/* UI Layers */}
       {gameState === 'loading' && <LoadingScreen />}
-      {gameState === 'welcome' && <WelcomeScreen data={museumData} />}
+      {gameState === 'welcome' && <WelcomeScreen data={currentMuseumData} />}
       {gameState === 'playing' && (
         <>
-          <GameUI data={museumData} />
+          <GameUI
+            data={currentMuseumData}
+            partnerConnected={partnerConnected}
+            myRole={myRole}
+          />
           {isMobile && <MobileControls />}
+
+          {/* Interactive Waltz Invitation & Dance UI */}
+          <WaltzModal
+            canInvite={canInviteWaltz}
+            waltzStatus={waltzStatus}
+            partnerRole={partnerRole}
+            onInvite={inviteWaltz}
+            onAccept={acceptWaltz}
+            onStop={stopWaltz}
+          />
         </>
       )}
-      {gameState === 'finale' && <FinaleScreen data={museumData} />}
+      {gameState === 'finale' && <FinaleScreen data={currentMuseumData} />}
 
       {/* Photo overlay */}
       {activePhoto && <PhotoOverlay />}
+
+      {/* Admin Panel (Password Protected: 7777) */}
+      <AdminPanel
+        isOpen={adminOpen}
+        onClose={toggleAdmin}
+        currentData={currentMuseumData}
+        onSaveData={(updated) => setCurrentMuseumData(updated)}
+      />
     </div>
   )
 }

@@ -179,6 +179,12 @@ export default function PlayerController() {
 
     // Apply rotation
     camera.quaternion.setFromEuler(euler.current)
+
+    // Broadcast position to partner via multiplayer
+    if (window.__sendMyTransform) {
+      const isMoving = len > 0.05
+      window.__sendMyTransform(camera.position, euler.current.y, isMoving ? 'walking' : 'idle')
+    }
   })
 
   return null

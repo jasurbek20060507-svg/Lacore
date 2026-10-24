@@ -142,26 +142,36 @@ function HelpButton() {
   )
 }
 
-export default function GameUI({ data }) {
+export default function GameUI({ data, partnerConnected = false, myRole = 'boy' }) {
   const isMobile = useMuseumStore((s) => s.isMobile)
+  const toggleAdmin = useMuseumStore((s) => s.toggleAdmin)
 
   return (
     <>
       {/* Top bar */}
       <div className="fixed top-0 left-0 right-0 z-30 p-3 flex items-center justify-between pointer-events-none">
-        {/* Museum name */}
+        {/* Museum name & Role badge */}
         <motion.div
-          className="glass rounded-xl px-4 py-2 pointer-events-auto"
+          className="flex items-center gap-2 pointer-events-auto"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
-          <p
-            className="text-rose-300 text-sm font-semibold"
-            style={{ fontFamily: 'Playfair Display, serif' }}
-          >
-            {data.coupleNames}
-          </p>
+          <div className="glass rounded-xl px-4 py-2">
+            <p
+              className="text-rose-300 text-sm font-semibold"
+              style={{ fontFamily: 'Playfair Display, serif' }}
+            >
+              {data.coupleNames}
+            </p>
+          </div>
+          {/* Partner online indicator */}
+          <div className="glass rounded-xl px-3 py-2 flex items-center gap-1.5 text-[11px]">
+            <span className={`w-2 h-2 rounded-full ${partnerConnected ? 'bg-green-400 animate-pulse' : 'bg-amber-400'}`} />
+            <span className="text-white/70">
+              {partnerConnected ? 'Juftingiz onlayn ❤️' : 'Juft kutilmoqda'}
+            </span>
+          </div>
         </motion.div>
 
         {/* Control buttons */}
@@ -171,6 +181,16 @@ export default function GameUI({ data }) {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
+          {/* Admin panel button */}
+          <motion.button
+            onClick={toggleAdmin}
+            className="glass rounded-full w-11 h-11 flex items-center justify-center text-lg hover:bg-white/10 transition-colors cursor-pointer"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            title="Admin Panel (Sozlamalar)"
+          >
+            ⚙️
+          </motion.button>
           <MusicButton />
           <HelpButton />
         </motion.div>
