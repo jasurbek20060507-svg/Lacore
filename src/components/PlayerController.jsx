@@ -1,7 +1,9 @@
-import React, { useRef, useEffect } from 'react'
+import React, { useRef, useEffect, useState } from 'react'
 import { useThree, useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { useMuseumStore } from '../store'
+import BoyCharacter from './characters/BoyCharacter'
+import GirlCharacter from './characters/GirlCharacter'
 
 // Museum boundaries
 const BOUNDS = {
@@ -23,6 +25,9 @@ export default function PlayerController({ myRole = 'boy' }) {
   const isSitting = useMuseumStore((s) => s.isSitting)
   const cameraMode = useMuseumStore((s) => s.cameraMode)
   const toggleCameraMode = useMuseumStore((s) => s.toggleCameraMode)
+
+  const [isWalking, setIsWalking] = useState(false)
+  const avatarGroupRef = useRef()
 
   const keys = useRef({})
   const euler = useRef(new THREE.Euler(0, 0, 0, 'YXZ'))
@@ -100,22 +105,23 @@ export default function PlayerController({ myRole = 'boy' }) {
   useEffect(() => {
     if (!isMobile) return
 
-    const canvas = gl.domElement
-
     const onTouchStart = (e) => {
-      const touch = e.touches[e.touches.length - 1]
-      if (touch.clientX > window.innerWidth * 0.4) {
-        touchStart.current = { x: touch.clientX, y: touch.clientY }
+      for (let i = 0; i < e.touches.length; i++) {
+        const touch = e.touches[i]
+        // Right half of screen for camera control
+        if (touch.clientX > window.innerWidth * 0.45) {
+          touchStart.current = { x: touch.clientX, y: touch.clientY }
+        }
       }
     }
 
     const onTouchMove = (e) => {
       for (let i = 0; i < e.touches.length; i++) {
         const touch = e.touches[i]
-        if (touch.clientX > window.innerWidth * 0.35) {
+        if (touch.clientX > window.innerWidth * 0.45) {
           const dx = touch.clientX - touchStart.current.x
           const dy = touch.clientY - touchStart.current.y
-          euler.current.y -= dx * 0.003
+          euler.current.y -= dx * 0.004
           euler.current.x -= dy * 0.003
           euler.current.x = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, euler.current.x))
           touchStart.current = { x: touch.clientX, y: touch.clientY }
@@ -123,14 +129,14 @@ export default function PlayerController({ myRole = 'boy' }) {
       }
     }
 
-    canvas.addEventListener('touchstart', onTouchStart, { passive: true })
-    canvas.addEventListener('touchmove', onTouchMove, { passive: true })
+    window.addEventListener('touchstart', onTouchStart, { passive: true })
+    window.addEventListener('touchmove', onTouchMove, { passive: true })
 
     return () => {
-      canvas.removeEventListener('touchstart', onTouchStart)
-      canvas.removeEventListener('touchmove', onTouchMove)
+      window.removeEventListener('touchstart', onTouchStart)
+      window.removeEventListener('touchmove', onTouchMove)
     }
-  }, [gl, isMobile])
+  }, [isMobile])
 
   // Expose joystick input setter globally for MobileControls
   useEffect(() => {
@@ -146,6 +152,12 @@ export default function PlayerController({ myRole = 'boy' }) {
       const chairX = myRole === 'boy' ? -0.9 : 0.9
       const chairZ = -12 // Table position in gallery
       playerPosition.current.set(chairX, 0, chairZ)
+
+      if (avatarGroupRef.current) {
+        avatarGroupRef.current.visible = true
+        avatarGroupRef.current.position.set(chairX, 0, chairZ)
+        avatarGroupRef.current.rotation.y = myRole === 'boy' ? Math.PI / 2 : -Math.PI / 2
+      }
 
       if (cameraMode === 'third') {
         camera.position.set(chairX, 1.6, chairZ + 1.8)
@@ -186,6 +198,11 @@ export default function PlayerController({ myRole = 'boy' }) {
       moveZ /= len
     }
 
+    const isMoving = len > 0.05
+    if (isMoving !== isWalking) {
+      setIsWalking(isMoving)
+    }
+
     // Apply movement in camera direction
     const forward = new THREE.Vector3(0, 0, -1).applyEuler(new THREE.Euler(0, euler.current.y, 0))
     const right = new THREE.Vector3(1, 0, 0).applyEuler(new THREE.Euler(0, euler.current.y, 0))
@@ -202,6 +219,17 @@ export default function PlayerController({ myRole = 'boy' }) {
 
     playerPosition.current.x = newX
     playerPosition.current.z = newZ
+
+    // Update 3D avatar position and visibility
+    if (avatarGroupRef.current) {
+      if (cameraMode === 'third') {
+        avatarGroupRef.current.visible = true
+        avatarGroupRef.current.position.set(newX, 0, newZ)
+        avatarGroupRef.current.rotation.y = euler.current.y
+      } else {
+        avatarGroupRef.current.visible = false
+      }
+    }
 
     // Camera placement: 1st person vs 3rd person
     if (cameraMode === 'third') {
@@ -221,10 +249,17 @@ export default function PlayerController({ myRole = 'boy' }) {
 
     // Broadcast position to partner via multiplayer
     if (window.__sendMyTransform) {
-      const isMoving = len > 0.05
       window.__sendMyTransform(playerPosition.current, euler.current.y, isMoving ? 'walking' : 'idle')
     }
   })
 
-  return null
+  return (
+    <group ref={avatarGroupRef} visible={false}>
+      {myRole === 'boy' ? (
+        <BoyCharacter isWalking={isWalking} isSitting={isSitting} isDancing={false} />
+      ) : (
+        <GirlCharacter isWalking={isWalking} isSitting={isSitting} isDancing={false} />
+      )}
+    </group>
+  )
 }

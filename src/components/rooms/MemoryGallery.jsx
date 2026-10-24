@@ -1,20 +1,47 @@
-import React, { useRef, useState, useMemo } from 'react'
+import React, { useRef, useState, useEffect, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Text, useCursor, useTexture } from '@react-three/drei'
+import { Text, useCursor } from '@react-three/drei'
 import * as THREE from 'three'
 import { useMuseumStore } from '../../store'
 import RomanticTable from '../RomanticTable'
 
-// Ornate Picture & Video Frame Component using the user's uploaded Baroque Frame
+// Safe non-suspending frame texture loader
+let sharedFrameTexture = null
+let isTextureLoading = false
+
+function loadFrameTexture(onLoaded) {
+  if (sharedFrameTexture) {
+    onLoaded(sharedFrameTexture)
+    return
+  }
+  if (isTextureLoading || typeof window === 'undefined') return
+  isTextureLoading = true
+  const loader = new THREE.TextureLoader()
+  loader.load(
+    '/frames/frame-baroque-ornate.png',
+    (tex) => {
+      sharedFrameTexture = tex
+      onLoaded(tex)
+    },
+    undefined,
+    () => {
+      isTextureLoading = false
+    }
+  )
+}
+
+// Ornate Picture & Video Frame Component
 function BaroquePhotoFrame({ photo, position, rotation = [0, 0, 0], wallSide = 'left' }) {
   const [hovered, setHovered] = useState(false)
+  const [frameTexture, setFrameTexture] = useState(sharedFrameTexture)
   const frameRef = useRef()
   const glowRef = useRef()
   const setActivePhoto = useMuseumStore((s) => s.setActivePhoto)
   useCursor(hovered)
 
-  // Use texture for the frame if available
-  const frameTexture = useTexture('/frames/frame-baroque-ornate.png')
+  useEffect(() => {
+    loadFrameTexture((tex) => setFrameTexture(tex))
+  }, [])
 
   useFrame((state) => {
     if (glowRef.current) {
@@ -68,7 +95,8 @@ function BaroquePhotoFrame({ photo, position, rotation = [0, 0, 0], wallSide = '
       <mesh position={[0, 0, 0.02]}>
         <planeGeometry args={[frameWidth, frameHeight]} />
         <meshStandardMaterial
-          map={frameTexture}
+          color={frameTexture ? '#ffffff' : '#d4af37'}
+          map={frameTexture || null}
           transparent={true}
           roughness={0.25}
           metalness={0.7}

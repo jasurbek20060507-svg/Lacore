@@ -15,7 +15,7 @@ export default function WaltzModal({
   const partnerTitle = partnerRole === 'girl' ? 'Kelin' : 'Kuyov'
 
   return (
-    <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-40 pointer-events-auto flex flex-col items-center gap-2">
+    <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-40 pointer-events-none flex flex-col items-center gap-2">
       <AnimatePresence>
         {/* Table Sitting Prompt */}
         {nearTable && waltzStatus !== 'dancing' && (
@@ -23,7 +23,7 @@ export default function WaltzModal({
             initial={{ opacity: 0, y: 20, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="glass rounded-2xl p-3 shadow-2xl border border-amber-500/30 text-center max-w-xs backdrop-blur-md"
+            className="glass rounded-2xl p-3 shadow-2xl border border-amber-500/30 text-center max-w-xs backdrop-blur-md pointer-events-auto"
           >
             <p className="text-amber-200 text-xs font-serif mb-2">
               {isSitting ? "Romantik stolda o'tiribsiz 🍷" : "Romantik shamchiroqli stol 🕯️"}
@@ -44,7 +44,7 @@ export default function WaltzModal({
             initial={{ opacity: 0, y: 30, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="glass rounded-2xl p-4 shadow-2xl border border-rose-500/30 text-center max-w-sm backdrop-blur-md"
+            className="glass rounded-2xl p-4 shadow-2xl border border-rose-500/30 text-center max-w-sm backdrop-blur-md pointer-events-auto"
           >
             <p className="text-rose-200 text-sm font-medium mb-3">
               Bir-biringizga juda yaqinsiz... 🌹
@@ -81,7 +81,7 @@ export default function WaltzModal({
             initial={{ opacity: 0, y: 30, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="glass rounded-2xl p-5 shadow-2xl border-2 border-rose-400/50 text-center max-w-sm bg-gradient-to-b from-rose-950/80 to-black/80"
+            className="glass rounded-2xl p-5 shadow-2xl border-2 border-rose-400/50 text-center max-w-sm bg-gradient-to-b from-rose-950/80 to-black/80 pointer-events-auto"
           >
             <span className="text-3xl mb-2 block">💌</span>
             <p className="text-rose-200 text-base font-semibold mb-1">
@@ -113,7 +113,7 @@ export default function WaltzModal({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="glass rounded-2xl px-6 py-3 shadow-2xl border border-rose-500/40 flex items-center gap-4 bg-black/60 backdrop-blur-md"
+            className="glass rounded-2xl px-6 py-3 shadow-2xl border border-rose-500/40 flex items-center gap-4 bg-black/60 backdrop-blur-md pointer-events-auto"
           >
             <div>
               <p className="text-rose-300 text-xs font-semibold">
