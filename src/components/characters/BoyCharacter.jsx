@@ -2,7 +2,13 @@ import React, { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
-export default function BoyCharacter({ position = [0, 0, 0], rotation = [0, 0, 0], isWalking = false, isDancing = false }) {
+export default function BoyCharacter({
+  position = [0, 0, 0],
+  rotation = [0, 0, 0],
+  isWalking = false,
+  isDancing = false,
+  isSitting = false,
+}) {
   const groupRef = useRef()
   const leftLegRef = useRef()
   const rightLegRef = useRef()
@@ -13,131 +19,178 @@ export default function BoyCharacter({ position = [0, 0, 0], rotation = [0, 0, 0
   useFrame((state) => {
     const time = state.clock.elapsedTime
 
-    if (isDancing) {
-      // Waltz dance posture & animation
+    if (isSitting) {
+      // Sitting at table posture
+      if (leftLegRef.current) {
+        leftLegRef.current.rotation.x = -Math.PI / 2
+        leftLegRef.current.position.y = 0.5
+        leftLegRef.current.position.z = 0.2
+      }
+      if (rightLegRef.current) {
+        rightLegRef.current.rotation.x = -Math.PI / 2
+        rightLegRef.current.position.y = 0.5
+        rightLegRef.current.position.z = 0.2
+      }
       if (leftArmRef.current) {
-        // Left arm extended holding girl's right hand
-        leftArmRef.current.rotation.x = -Math.PI / 4
-        leftArmRef.current.rotation.z = Math.PI / 3 + Math.sin(time * 3) * 0.05
+        leftArmRef.current.rotation.x = -Math.PI / 3.5
+        leftArmRef.current.rotation.z = 0.2
       }
       if (rightArmRef.current) {
-        // Right arm around girl's waist
-        rightArmRef.current.rotation.x = -Math.PI / 3
-        rightArmRef.current.rotation.y = -Math.PI / 6
+        rightArmRef.current.rotation.x = -Math.PI / 3.5
+        rightArmRef.current.rotation.z = -0.2
       }
       if (headRef.current) {
-        headRef.current.rotation.y = Math.PI / 10 + Math.sin(time * 2) * 0.05
+        headRef.current.position.y = 1.15
+        headRef.current.rotation.y = Math.sin(time * 0.8) * 0.08
       }
       return
     }
 
+    if (isDancing) {
+      // Waltz dance posture
+      if (leftArmRef.current) {
+        leftArmRef.current.rotation.x = -Math.PI / 3.8
+        leftArmRef.current.rotation.z = Math.PI / 3 + Math.sin(time * 3) * 0.06
+      }
+      if (rightArmRef.current) {
+        rightArmRef.current.rotation.x = -Math.PI / 2.8
+        rightArmRef.current.rotation.y = -Math.PI / 5
+      }
+      if (headRef.current) {
+        headRef.current.position.y = 1.48
+        headRef.current.rotation.y = Math.PI / 10 + Math.sin(time * 2) * 0.05
+      }
+      if (leftLegRef.current) leftLegRef.current.rotation.x = Math.sin(time * 3) * 0.2
+      if (rightLegRef.current) rightLegRef.current.rotation.x = -Math.sin(time * 3) * 0.2
+      return
+    }
+
     if (isWalking) {
-      // Walking swing
+      // Natural walking stride
       const legAngle = Math.sin(time * 7) * 0.45
-      if (leftLegRef.current) leftLegRef.current.rotation.x = legAngle
-      if (rightLegRef.current) rightLegRef.current.rotation.x = -legAngle
+      if (leftLegRef.current) {
+        leftLegRef.current.rotation.x = legAngle
+        leftLegRef.current.position.set(-0.09, 0.85, 0)
+      }
+      if (rightLegRef.current) {
+        rightLegRef.current.rotation.x = -legAngle
+        rightLegRef.current.position.set(0.09, 0.85, 0)
+      }
 
       const armAngle = Math.sin(time * 7) * 0.35
       if (leftArmRef.current) leftArmRef.current.rotation.x = -armAngle
       if (rightArmRef.current) rightArmRef.current.rotation.x = armAngle
 
-      if (headRef.current) headRef.current.position.y = 1.48 + Math.abs(Math.sin(time * 7)) * 0.02
+      if (headRef.current) {
+        headRef.current.position.y = 1.48 + Math.abs(Math.sin(time * 7)) * 0.02
+        headRef.current.rotation.y = 0
+      }
     } else {
       // Idle breathing
       const breath = Math.sin(time * 2) * 0.03
       if (leftArmRef.current) {
         leftArmRef.current.rotation.x = 0.05
-        leftArmRef.current.rotation.z = 0.08 + breath * 0.5
+        leftArmRef.current.rotation.z = 0.08 + breath * 0.4
       }
       if (rightArmRef.current) {
         rightArmRef.current.rotation.x = 0.05
-        rightArmRef.current.rotation.z = -0.08 - breath * 0.5
+        rightArmRef.current.rotation.z = -0.08 - breath * 0.4
       }
-      if (leftLegRef.current) leftLegRef.current.rotation.x = 0
-      if (rightLegRef.current) rightLegRef.current.rotation.x = 0
-      if (headRef.current) headRef.current.rotation.y = Math.sin(time * 0.8) * 0.05
+      if (leftLegRef.current) {
+        leftLegRef.current.rotation.x = 0
+        leftLegRef.current.position.set(-0.09, 0.85, 0)
+      }
+      if (rightLegRef.current) {
+        rightLegRef.current.rotation.x = 0
+        rightLegRef.current.position.set(0.09, 0.85, 0)
+      }
+      if (headRef.current) {
+        headRef.current.position.y = 1.48
+        headRef.current.rotation.y = Math.sin(time * 0.8) * 0.05
+      }
     }
   })
 
-  // Materials
-  const suitMaterial = new THREE.MeshStandardMaterial({ color: '#1a1d29', roughness: 0.6, metalness: 0.2 })
-  const lapelMaterial = new THREE.MeshStandardMaterial({ color: '#0d0f17', roughness: 0.3, metalness: 0.4 })
-  const shirtMaterial = new THREE.MeshStandardMaterial({ color: '#f8fafc', roughness: 0.7 })
-  const skinMaterial = new THREE.MeshStandardMaterial({ color: '#e8beac', roughness: 0.6 })
-  const hairMaterial = new THREE.MeshStandardMaterial({ color: '#1c1917', roughness: 0.8 })
-  const bowTieMaterial = new THREE.MeshStandardMaterial({ color: '#991b1b', roughness: 0.4 })
-  const shoeMaterial = new THREE.MeshStandardMaterial({ color: '#0f172a', roughness: 0.2, metalness: 0.6 })
+  // Exact matching materials from boy-avatar.png: Navy blue tailored suit, white shirt, black tie
+  const suitMaterial = new THREE.MeshStandardMaterial({ color: '#1e2d4d', roughness: 0.5, metalness: 0.15 })
+  const shirtMaterial = new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.7 })
+  const tieMaterial = new THREE.MeshStandardMaterial({ color: '#0f172a', roughness: 0.4 })
+  const skinMaterial = new THREE.MeshStandardMaterial({ color: '#f3c7b3', roughness: 0.6 })
+  const hairMaterial = new THREE.MeshStandardMaterial({ color: '#271c19', roughness: 0.8 })
+  const watchMaterial = new THREE.MeshStandardMaterial({ color: '#cbd5e1', roughness: 0.2, metalness: 0.8 })
+  const shoeMaterial = new THREE.MeshStandardMaterial({ color: '#0f172a', roughness: 0.2, metalness: 0.5 })
+
+  const torsoY = isSitting ? 0.7 : 1.05
 
   return (
     <group ref={groupRef} position={position} rotation={rotation}>
       {/* Head & Hair */}
-      <group ref={headRef} position={[0, 1.48, 0]}>
-        {/* Face/Head */}
+      <group ref={headRef} position={[0, isSitting ? 1.15 : 1.48, 0]}>
+        {/* Head */}
         <mesh position={[0, 0, 0]} castShadow>
           <sphereGeometry args={[0.11, 20, 20]} />
           <primitive object={skinMaterial} attach="material" />
         </mesh>
-        {/* Hair */}
-        <mesh position={[0, 0.04, -0.01]} castShadow>
-          <sphereGeometry args={[0.115, 18, 18]} />
+        {/* Styled Hair */}
+        <mesh position={[0, 0.045, -0.01]} castShadow>
+          <sphereGeometry args={[0.116, 20, 20]} />
           <primitive object={hairMaterial} attach="material" />
         </mesh>
-        {/* Hair quiff/style */}
-        <mesh position={[0, 0.1, 0.04]} rotation={[0.2, 0, 0]}>
-          <boxGeometry args={[0.12, 0.05, 0.1]} />
+        {/* Modern fringe/pompadour */}
+        <mesh position={[0, 0.11, 0.035]} rotation={[0.2, 0, 0]}>
+          <boxGeometry args={[0.13, 0.06, 0.1]} />
           <primitive object={hairMaterial} attach="material" />
         </mesh>
         {/* Neck */}
         <mesh position={[0, -0.11, 0]}>
-          <cylinderGeometry args={[0.045, 0.05, 0.08, 12]} />
+          <cylinderGeometry args={[0.045, 0.05, 0.08, 14]} />
           <primitive object={skinMaterial} attach="material" />
         </mesh>
       </group>
 
-      {/* Torso & Suit */}
-      <group position={[0, 1.05, 0]}>
-        {/* Chest / Suit jacket */}
+      {/* Torso & Navy Suit Jacket */}
+      <group position={[0, torsoY, 0]}>
+        {/* Jacket body */}
         <mesh position={[0, 0.15, 0]} castShadow>
-          <boxGeometry args={[0.34, 0.38, 0.2]} />
+          <boxGeometry args={[0.34, 0.4, 0.21]} />
           <primitive object={suitMaterial} attach="material" />
         </mesh>
-        {/* White shirt triangle */}
-        <mesh position={[0, 0.24, 0.102]}>
-          <planeGeometry args={[0.1, 0.14]} />
+        {/* White collared shirt */}
+        <mesh position={[0, 0.24, 0.106]}>
+          <planeGeometry args={[0.09, 0.16]} />
           <primitive object={shirtMaterial} attach="material" />
         </mesh>
-        {/* Bow tie */}
-        <mesh position={[0, 0.29, 0.11]}>
-          <boxGeometry args={[0.08, 0.035, 0.02]} />
-          <primitive object={bowTieMaterial} attach="material" />
+        {/* Black necktie */}
+        <mesh position={[0, 0.18, 0.11]}>
+          <boxGeometry args={[0.032, 0.2, 0.015]} />
+          <primitive object={tieMaterial} attach="material" />
         </mesh>
-        {/* Satin lapels */}
-        <mesh position={[-0.08, 0.2, 0.105]} rotation={[0, 0, -0.15]}>
-          <boxGeometry args={[0.045, 0.22, 0.01]} />
-          <primitive object={lapelMaterial} attach="material" />
+        {/* White pocket square on left chest */}
+        <mesh position={[-0.1, 0.24, 0.108]}>
+          <boxGeometry args={[0.04, 0.015, 0.005]} />
+          <primitive object={shirtMaterial} attach="material" />
         </mesh>
-        <mesh position={[0.08, 0.2, 0.105]} rotation={[0, 0, 0.15]}>
-          <boxGeometry args={[0.045, 0.22, 0.01]} />
-          <primitive object={lapelMaterial} attach="material" />
-        </mesh>
-        {/* Lower torso / Waist */}
+        {/* Lower torso */}
         <mesh position={[0, -0.1, 0]}>
-          <boxGeometry args={[0.3, 0.18, 0.18]} />
+          <boxGeometry args={[0.31, 0.18, 0.19]} />
           <primitive object={suitMaterial} attach="material" />
         </mesh>
       </group>
 
-      {/* Left Arm */}
-      <group ref={leftArmRef} position={[-0.21, 1.3, 0]}>
-        {/* Shoulder */}
+      {/* Left Arm with Watch */}
+      <group ref={leftArmRef} position={[-0.21, torsoY + 0.25, 0]}>
         <mesh position={[0, 0, 0]}>
           <sphereGeometry args={[0.055, 12, 12]} />
           <primitive object={suitMaterial} attach="material" />
         </mesh>
-        {/* Arm */}
         <mesh position={[-0.02, -0.22, 0]} castShadow>
           <cylinderGeometry args={[0.045, 0.04, 0.38, 12]} />
           <primitive object={suitMaterial} attach="material" />
+        </mesh>
+        {/* Silver Watch */}
+        <mesh position={[-0.02, -0.38, 0]}>
+          <cylinderGeometry args={[0.042, 0.042, 0.025, 12]} />
+          <primitive object={watchMaterial} attach="material" />
         </mesh>
         {/* Hand */}
         <mesh position={[-0.02, -0.44, 0]}>
@@ -147,13 +200,11 @@ export default function BoyCharacter({ position = [0, 0, 0], rotation = [0, 0, 0
       </group>
 
       {/* Right Arm */}
-      <group ref={rightArmRef} position={[0.21, 1.3, 0]}>
-        {/* Shoulder */}
+      <group ref={rightArmRef} position={[0.21, torsoY + 0.25, 0]}>
         <mesh position={[0, 0, 0]}>
           <sphereGeometry args={[0.055, 12, 12]} />
           <primitive object={suitMaterial} attach="material" />
         </mesh>
-        {/* Arm */}
         <mesh position={[0.02, -0.22, 0]} castShadow>
           <cylinderGeometry args={[0.045, 0.04, 0.38, 12]} />
           <primitive object={suitMaterial} attach="material" />
@@ -166,13 +217,11 @@ export default function BoyCharacter({ position = [0, 0, 0], rotation = [0, 0, 0
       </group>
 
       {/* Left Leg */}
-      <group ref={leftLegRef} position={[-0.09, 0.85, 0]}>
-        {/* Thigh & Calve */}
+      <group ref={leftLegRef} position={[-0.09, torsoY - 0.2, 0]}>
         <mesh position={[0, -0.4, 0]} castShadow>
-          <cylinderGeometry args={[0.06, 0.045, 0.75, 12]} />
+          <cylinderGeometry args={[0.06, 0.046, 0.75, 12]} />
           <primitive object={suitMaterial} attach="material" />
         </mesh>
-        {/* Shoe */}
         <mesh position={[0, -0.8, 0.04]} castShadow>
           <boxGeometry args={[0.09, 0.07, 0.2]} />
           <primitive object={shoeMaterial} attach="material" />
@@ -180,13 +229,11 @@ export default function BoyCharacter({ position = [0, 0, 0], rotation = [0, 0, 0
       </group>
 
       {/* Right Leg */}
-      <group ref={rightLegRef} position={[0.09, 0.85, 0]}>
-        {/* Thigh & Calve */}
+      <group ref={rightLegRef} position={[0.09, torsoY - 0.2, 0]}>
         <mesh position={[0, -0.4, 0]} castShadow>
-          <cylinderGeometry args={[0.06, 0.045, 0.75, 12]} />
+          <cylinderGeometry args={[0.06, 0.046, 0.75, 12]} />
           <primitive object={suitMaterial} attach="material" />
         </mesh>
-        {/* Shoe */}
         <mesh position={[0, -0.8, 0.04]} castShadow>
           <boxGeometry args={[0.09, 0.07, 0.2]} />
           <primitive object={shoeMaterial} attach="material" />

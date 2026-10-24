@@ -38,6 +38,18 @@ export const useMuseumStore = create((set) => ({
   isDancing: false,
   setIsDancing: (val) => set({ isDancing: val }),
 
+  // Video & Audio Ducking
+  isVideoPlaying: false,
+  setIsVideoPlaying: (val) => set({ isVideoPlaying: val }),
+
+  // Table Sitting
+  isSitting: false,
+  setIsSitting: (val) => set({ isSitting: val }),
+
+  // Camera Mode: 'first' or 'third'
+  cameraMode: 'first',
+  toggleCameraMode: () => set((s) => ({ cameraMode: s.cameraMode === 'first' ? 'third' : 'first' })),
+
   // Custom client museum data
   customData: null,
   setCustomData: (data) => set({ customData: data }),

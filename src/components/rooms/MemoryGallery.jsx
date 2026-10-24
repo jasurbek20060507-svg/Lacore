@@ -1,32 +1,35 @@
 import React, { useRef, useState, useMemo } from 'react'
-import { useFrame, useThree } from '@react-three/fiber'
-import { Text, useCursor } from '@react-three/drei'
+import { useFrame } from '@react-three/fiber'
+import { Text, useCursor, useTexture } from '@react-three/drei'
 import * as THREE from 'three'
 import { useMuseumStore } from '../../store'
+import RomanticTable from '../RomanticTable'
 
-// Photo frame component
-function PhotoFrame({ photo, position, rotation = [0, 0, 0], wallSide = 'left' }) {
+// Ornate Picture & Video Frame Component using the user's uploaded Baroque Frame
+function BaroquePhotoFrame({ photo, position, rotation = [0, 0, 0], wallSide = 'left' }) {
   const [hovered, setHovered] = useState(false)
   const frameRef = useRef()
   const glowRef = useRef()
   const setActivePhoto = useMuseumStore((s) => s.setActivePhoto)
   useCursor(hovered)
 
+  // Use texture for the frame if available
+  const frameTexture = useTexture('/frames/frame-baroque-ornate.png')
+
   useFrame((state) => {
     if (glowRef.current) {
       glowRef.current.material.opacity = hovered
-        ? 0.3 + Math.sin(state.clock.elapsedTime * 3) * 0.1
-        : 0.05 + Math.sin(state.clock.elapsedTime * 1.5) * 0.03
+        ? 0.35 + Math.sin(state.clock.elapsedTime * 3) * 0.1
+        : 0.08 + Math.sin(state.clock.elapsedTime * 1.5) * 0.03
     }
   })
 
-  const frameWidth = 1.4
-  const frameHeight = 1.0
-  const borderSize = 0.08
+  const frameWidth = 1.6
+  const frameHeight = 1.15
 
-  // Generate a placeholder color based on photo id
+  // Generate placeholder color
   const placeholderColor = useMemo(() => {
-    const colors = ['#e8b4b8', '#b4c7e8', '#b8e8b4', '#e8d4b4', '#d4b4e8', '#b4e8e0', '#e8b4d8', '#c7e8b4', '#e8c7b4', '#b4d4e8']
+    const colors = ['#831843', '#1e3a8a', '#14532d', '#713f12', '#581c87', '#134e4a', '#881337', '#1e293b', '#7c2d12', '#312e81']
     return colors[(photo.id - 1) % colors.length]
   }, [photo.id])
 
@@ -39,73 +42,97 @@ function PhotoFrame({ photo, position, rotation = [0, 0, 0], wallSide = 'left' }
       onPointerOut={() => setHovered(false)}
       onClick={(e) => { e.stopPropagation(); setActivePhoto(photo) }}
     >
-      {/* Frame border - gold ornate */}
-      <mesh castShadow>
-        <boxGeometry args={[frameWidth + borderSize * 2, frameHeight + borderSize * 2, 0.06]} />
+      {/* 3D Gold Moulding Backing */}
+      <mesh position={[0, 0, -0.02]} castShadow>
+        <boxGeometry args={[frameWidth + 0.1, frameHeight + 0.1, 0.04]} />
         <meshStandardMaterial
-          color={hovered ? '#fbbf24' : '#c9a060'}
-          roughness={0.3}
-          metalness={0.6}
-          emissive={hovered ? '#fbbf24' : '#000000'}
+          color={hovered ? '#fbbf24' : '#d4af37'}
+          roughness={0.25}
+          metalness={0.8}
+          emissive={hovered ? '#f59e0b' : '#000000'}
           emissiveIntensity={hovered ? 0.3 : 0}
         />
       </mesh>
 
-      {/* Inner frame shadow */}
-      <mesh position={[0, 0, 0.025]}>
-        <boxGeometry args={[frameWidth + 0.02, frameHeight + 0.02, 0.02]} />
-        <meshStandardMaterial color="#2a1a0a" roughness={0.9} />
-      </mesh>
-
-      {/* Photo surface (placeholder) */}
-      <mesh position={[0, 0, 0.04]}>
-        <planeGeometry args={[frameWidth, frameHeight]} />
+      {/* Picture / Video Media Plane inside the frame (clamped so it never overflows) */}
+      <mesh position={[0, 0, 0.01]}>
+        <planeGeometry args={[frameWidth * 0.72, frameHeight * 0.72]} />
         <meshStandardMaterial
           color={placeholderColor}
-          roughness={0.5}
-          metalness={0.05}
+          roughness={0.4}
+          metalness={0.1}
         />
       </mesh>
 
-      {/* Photo number overlay */}
+      {/* Transparent Baroque Gilded Ornate Frame Overlay */}
+      <mesh position={[0, 0, 0.02]}>
+        <planeGeometry args={[frameWidth, frameHeight]} />
+        <meshStandardMaterial
+          map={frameTexture}
+          transparent={true}
+          roughness={0.25}
+          metalness={0.7}
+        />
+      </mesh>
+
+      {/* Media Indicator: Video or Photo */}
+      {photo.video ? (
+        <group position={[0, 0, 0.04]}>
+          <mesh>
+            <circleGeometry args={[0.15, 24]} />
+            <meshStandardMaterial color="#000000" opacity={0.6} transparent />
+          </mesh>
+          <Text
+            position={[0.02, 0, 0.01]}
+            fontSize={0.14}
+            color="#ffffff"
+            anchorX="center"
+            anchorY="middle"
+          >
+            ▶
+          </Text>
+        </group>
+      ) : (
+        <Text
+          position={[0, 0.05, 0.03]}
+          fontSize={0.22}
+          color="#ffffff"
+          anchorX="center"
+          anchorY="middle"
+        >
+          {photo.id}
+        </Text>
+      )}
+
       <Text
-        position={[0, 0.05, 0.05]}
-        fontSize={0.25}
-        color="#ffffff"
-        anchorX="center"
-        anchorY="middle"
-      >
-        {photo.id}
-      </Text>
-      <Text
-        position={[0, -0.2, 0.05]}
-        fontSize={0.07}
-        color="#ffffff99"
+        position={[0, -0.25, 0.03]}
+        fontSize={0.075}
+        color="#ffffffcc"
         anchorX="center"
         anchorY="middle"
       >
         {photo.title}
       </Text>
 
-      {/* Glow effect behind frame */}
-      <mesh position={[0, 0, -0.05]} ref={glowRef}>
-        <planeGeometry args={[frameWidth + 0.5, frameHeight + 0.5]} />
-        <meshBasicMaterial
-          color="#fda4af"
-          transparent
-          opacity={0.05}
-        />
+      {/* Romantic Golden Glow behind frame */}
+      <mesh position={[0, 0, -0.04]} ref={glowRef}>
+        <planeGeometry args={[frameWidth + 0.6, frameHeight + 0.6]} />
+        <meshBasicMaterial color="#fbbf24" transparent opacity={0.08} />
       </mesh>
 
-      {/* Info label below frame */}
-      <mesh position={[0, -(frameHeight / 2 + borderSize + 0.15), 0.02]}>
-        <planeGeometry args={[0.8, 0.12]} />
-        <meshStandardMaterial color="#1a1a1a" roughness={0.9} />
+      {/* Ornate Plaque Label below frame */}
+      <mesh position={[0, -(frameHeight / 2 + 0.16), 0.01]}>
+        <planeGeometry args={[0.9, 0.14]} />
+        <meshStandardMaterial color="#1a120b" roughness={0.7} metalness={0.3} />
+      </mesh>
+      <mesh position={[0, -(frameHeight / 2 + 0.16), 0.005]}>
+        <planeGeometry args={[0.94, 0.18]} />
+        <meshStandardMaterial color="#d4af37" roughness={0.3} metalness={0.8} />
       </mesh>
       <Text
-        position={[0, -(frameHeight / 2 + borderSize + 0.15), 0.04]}
-        fontSize={0.04}
-        color="#c9a882"
+        position={[0, -(frameHeight / 2 + 0.16), 0.02]}
+        fontSize={0.045}
+        color="#fef3c7"
         anchorX="center"
         anchorY="middle"
       >
@@ -115,149 +142,156 @@ function PhotoFrame({ photo, position, rotation = [0, 0, 0], wallSide = 'left' }
   )
 }
 
-// Decorative pillar
-function Pillar({ position }) {
+// Ornate Gilded Baroque Pilaster
+function BaroquePilaster({ position }) {
+  const gold = new THREE.MeshStandardMaterial({ color: '#d4af37', roughness: 0.25, metalness: 0.75 })
+  const marble = new THREE.MeshStandardMaterial({ color: '#fcf8f2', roughness: 0.3, metalness: 0.05 })
+
   return (
     <group position={position}>
-      {/* Base */}
-      <mesh position={[0, 0.1, 0]} castShadow>
-        <boxGeometry args={[0.4, 0.2, 0.4]} />
-        <meshStandardMaterial color="#e0d0c0" roughness={0.4} metalness={0.1} />
+      {/* Marble Base */}
+      <mesh position={[0, 0.2, 0]} castShadow>
+        <boxGeometry args={[0.45, 0.4, 0.3]} />
+        <primitive object={marble} attach="material" />
       </mesh>
-      {/* Column */}
-      <mesh position={[0, 2, 0]} castShadow>
-        <cylinderGeometry args={[0.12, 0.14, 3.6, 12]} />
-        <meshStandardMaterial color="#e8ddd0" roughness={0.35} metalness={0.1} />
+      <mesh position={[0, 0.42, 0]}>
+        <boxGeometry args={[0.48, 0.05, 0.32]} />
+        <primitive object={gold} attach="material" />
       </mesh>
-      {/* Capital */}
-      <mesh position={[0, 3.85, 0]}>
-        <boxGeometry args={[0.38, 0.15, 0.38]} />
-        <meshStandardMaterial color="#e0d0c0" roughness={0.4} metalness={0.1} />
+      {/* Fluted Column Shaft */}
+      <mesh position={[0, 2.2, 0]} castShadow>
+        <cylinderGeometry args={[0.16, 0.18, 3.5, 16]} />
+        <primitive object={marble} attach="material" />
+      </mesh>
+      {/* Corinthian Gilded Capital */}
+      <mesh position={[0, 4.05, 0]}>
+        <boxGeometry args={[0.48, 0.22, 0.32]} />
+        <primitive object={gold} attach="material" />
+      </mesh>
+      <mesh position={[0, 4.2, 0]}>
+        <cylinderGeometry args={[0.22, 0.16, 0.12, 16]} />
+        <primitive object={gold} attach="material" />
       </mesh>
     </group>
   )
 }
 
-// Bench decoration
-function Bench({ position, rotation = [0, 0, 0] }) {
+// Crystal Chandelier (Galerie d'Apollon Style)
+function CrystalChandelier({ position }) {
+  const crystal = new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.1, metalness: 0.9, transparent: true, opacity: 0.85 })
+  const gold = new THREE.MeshStandardMaterial({ color: '#d4af37', roughness: 0.2, metalness: 0.85 })
+
   return (
-    <group position={position} rotation={rotation}>
-      {/* Seat */}
-      <mesh position={[0, 0.4, 0]} castShadow>
-        <boxGeometry args={[1.2, 0.06, 0.4]} />
-        <meshStandardMaterial color="#8b6548" roughness={0.6} metalness={0.05} />
+    <group position={position}>
+      {/* Chain */}
+      <mesh position={[0, 0.5, 0]}>
+        <cylinderGeometry args={[0.02, 0.02, 1, 8]} />
+        <primitive object={gold} attach="material" />
       </mesh>
-      {/* Legs */}
-      {[[-0.5, 0.2, 0.15], [0.5, 0.2, 0.15], [-0.5, 0.2, -0.15], [0.5, 0.2, -0.15]].map((pos, i) => (
-        <mesh key={i} position={pos} castShadow>
-          <boxGeometry args={[0.05, 0.4, 0.05]} />
-          <meshStandardMaterial color="#6b4528" roughness={0.7} />
-        </mesh>
-      ))}
+      {/* Ornate Gold Crown */}
+      <mesh position={[0, 0, 0]}>
+        <cylinderGeometry args={[0.5, 0.2, 0.25, 16]} />
+        <primitive object={gold} attach="material" />
+      </mesh>
+      {/* Crystal pendants ring */}
+      <mesh position={[0, -0.2, 0]}>
+        <torusGeometry args={[0.55, 0.08, 12, 24]} />
+        <primitive object={crystal} attach="material" />
+      </mesh>
+      {/* Lower crystal drop */}
+      <mesh position={[0, -0.5, 0]}>
+        <coneGeometry args={[0.3, 0.5, 12]} />
+        <primitive object={crystal} attach="material" />
+      </mesh>
+      {/* Radiant warm chandelier light */}
+      <pointLight position={[0, -0.3, 0]} color="#fff7ed" intensity={2.5} distance={12} decay={2} />
     </group>
   )
 }
 
-export default function MemoryGallery({ data, position }) {
-  const roomWidth = 8
-  const roomLength = 20
-  const roomHeight = 4
+export default function MemoryGallery({ data, position, onNearTable = () => {} }) {
+  const roomWidth = 8.6
+  const roomLength = 22
+  const roomHeight = 4.8
   const photos = data.photos || []
 
-  // Wall material
-  const wallColor = '#f5ede4'
-
   return (
     <group position={position}>
-      {/* Floor - polished marble effect */}
+      {/* French Parquet Herringbone Wood Floor */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
         <planeGeometry args={[roomWidth, roomLength]} />
-        <meshStandardMaterial color="#d4c4b0" roughness={0.2} metalness={0.15} />
+        <meshStandardMaterial color="#854d24" roughness={0.2} metalness={0.15} />
       </mesh>
 
-      {/* Ceiling */}
+      {/* French Royal Vaulted Baroque Ceiling */}
       <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, roomHeight, 0]}>
         <planeGeometry args={[roomWidth, roomLength]} />
-        <meshStandardMaterial color="#f0e6d8" roughness={0.8} />
+        <meshStandardMaterial color="#fef9f2" roughness={0.6} />
       </mesh>
 
-      {/* Left wall */}
+      {/* Left Wall with Royal Gilded Baroque Trim */}
       <mesh position={[-roomWidth / 2, roomHeight / 2, 0]} rotation={[0, Math.PI / 2, 0]}>
         <planeGeometry args={[roomLength, roomHeight]} />
-        <meshStandardMaterial color={wallColor} roughness={0.7} />
+        <meshStandardMaterial color="#f5ede4" roughness={0.65} />
       </mesh>
 
-      {/* Right wall */}
+      {/* Right Wall */}
       <mesh position={[roomWidth / 2, roomHeight / 2, 0]} rotation={[0, -Math.PI / 2, 0]}>
         <planeGeometry args={[roomLength, roomHeight]} />
-        <meshStandardMaterial color={wallColor} roughness={0.7} />
+        <meshStandardMaterial color="#f5ede4" roughness={0.65} />
       </mesh>
 
-      {/* Section title */}
+      {/* Galerie d'Apollon Section Title */}
       <Text
-        position={[0, 3.2, roomLength / 2 - 0.5]}
-        fontSize={0.25}
-        color="#c9a882"
+        position={[0, 3.8, roomLength / 2 - 0.5]}
+        fontSize={0.28}
+        color="#d4af37"
         anchorX="center"
         anchorY="middle"
       >
-        ✦ Xotiralar Galereyasi ✦
+        ✦ Galerie d'Apollon • Xotiralar Galereyasi ✦
       </Text>
 
-      {/* Photo frames - 5 on each wall */}
+      {/* Photo & Video Frames using Baroque Gilded Moulding (5 on Left, 5 on Right) */}
       {photos.slice(0, 5).map((photo, i) => (
-        <PhotoFrame
+        <BaroquePhotoFrame
           key={photo.id}
           photo={photo}
-          position={[-roomWidth / 2 + 0.05, 1.8, roomLength / 2 - 2 - i * 3.5]}
+          position={[-roomWidth / 2 + 0.08, 2.0, roomLength / 2 - 2.5 - i * 3.8]}
           rotation={[0, Math.PI / 2, 0]}
           wallSide="left"
         />
       ))}
 
       {photos.slice(5, 10).map((photo, i) => (
-        <PhotoFrame
+        <BaroquePhotoFrame
           key={photo.id}
           photo={photo}
-          position={[roomWidth / 2 - 0.05, 1.8, roomLength / 2 - 2 - i * 3.5]}
+          position={[roomWidth / 2 - 0.08, 2.0, roomLength / 2 - 2.5 - i * 3.8]}
           rotation={[0, -Math.PI / 2, 0]}
           wallSide="right"
         />
       ))}
 
-      {/* Pillars between photos */}
-      {[0, 1, 2, 3].map((i) => (
+      {/* Gilded Pilasters along the gallery walls */}
+      {[0, 1, 2, 3, 4].map((i) => (
         <React.Fragment key={i}>
-          <Pillar position={[-roomWidth / 2 + 0.3, 0, roomLength / 2 - 3.75 - i * 3.5]} />
-          <Pillar position={[roomWidth / 2 - 0.3, 0, roomLength / 2 - 3.75 - i * 3.5]} />
+          <BaroquePilaster position={[-roomWidth / 2 + 0.35, 0, roomLength / 2 - 4.4 - i * 3.8]} />
+          <BaroquePilaster position={[roomWidth / 2 - 0.35, 0, roomLength / 2 - 4.4 - i * 3.8]} />
         </React.Fragment>
       ))}
 
-      {/* Benches in center */}
-      <Bench position={[0, 0, roomLength / 2 - 4]} rotation={[0, Math.PI / 2, 0]} />
-      <Bench position={[0, 0, roomLength / 2 - 11]} rotation={[0, Math.PI / 2, 0]} />
+      {/* Radiant Crystal Chandeliers in the center */}
+      <CrystalChandelier position={[0, roomHeight - 0.8, roomLength / 2 - 4]} />
+      <CrystalChandelier position={[0, roomHeight - 0.8, 0]} />
+      <CrystalChandelier position={[0, roomHeight - 0.8, -roomLength / 2 + 4]} />
 
-      {/* Ceiling lights along the gallery */}
-      {[0, 1, 2, 3, 4].map((i) => (
-        <pointLight
-          key={i}
-          position={[0, 3.5, roomLength / 2 - 2 - i * 4]}
-          intensity={1.2}
-          color="#ffe4c9"
-          distance={8}
-          decay={2}
-        />
-      ))}
-
-      {/* Accent lights */}
-      <pointLight position={[-3, 1.5, 0]} intensity={0.3} color="#fda4af" distance={5} decay={2} />
-      <pointLight position={[3, 1.5, 0]} intensity={0.3} color="#fbbf24" distance={5} decay={2} />
-
-      {/* Center line on floor */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, 0]}>
-        <planeGeometry args={[0.05, roomLength - 2]} />
-        <meshStandardMaterial color="#c9a060" roughness={0.3} metalness={0.4} opacity={0.4} transparent />
-      </mesh>
+      {/* Romantic Candlelit Dining Table for Two with Sitting Interaction */}
+      <RomanticTable
+        position={[0, 0, 0]}
+        rotation={[0, 0, 0]}
+        onProximityChange={onNearTable}
+      />
     </group>
   )
 }

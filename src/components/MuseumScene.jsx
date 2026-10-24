@@ -16,6 +16,7 @@ export default function MuseumScene({
   partnerConnected = false,
   isDancing = false,
   onProximityChange = () => {},
+  onNearTable = () => {},
 }) {
   return (
     <>
@@ -52,7 +53,7 @@ export default function MuseumScene({
       <WelcomeHall data={data} position={[0, 0, 2]} />
 
       {/* Memory Gallery: z = -2 to z = -22 */}
-      <MemoryGallery data={data} position={[0, 0, -12]} />
+      <MemoryGallery data={data} position={[0, 0, -12]} onNearTable={onNearTable} />
 
       {/* Love Story Room: z = -22 to z = -32 */}
       <LoveStoryRoom data={data} position={[0, 0, -27]} />
@@ -64,7 +65,7 @@ export default function MuseumScene({
       <Particles count={100} area={[12, 6, 50]} offset={[0, 3, -18]} />
 
       {/* Player controller */}
-      <PlayerController />
+      <PlayerController myRole={myRole} />
     </>
   )
 }

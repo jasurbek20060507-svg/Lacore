@@ -1,7 +1,7 @@
 import React, { useState, useEffect, Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { useMuseumStore } from './store'
-import initialMuseumData from './data/museum.json'
+import { getMuseumById } from './data/database'
 import LoadingScreen from './components/LoadingScreen'
 import WelcomeScreen from './components/WelcomeScreen'
 import MuseumScene from './components/MuseumScene'
@@ -11,22 +11,20 @@ import FinaleScreen from './components/FinaleScreen'
 import MobileControls from './components/MobileControls'
 import WaltzModal from './components/WaltzModal'
 import AdminPanel from './components/AdminPanel'
+import YouTubePlayer from './components/YouTubePlayer'
 import { useMultiplayer } from './multiplayer/useMultiplayer'
 
 export default function App() {
   const { gameState, setGameState, isMobile, activePhoto, setLoadingProgress, adminOpen, toggleAdmin } = useMuseumStore()
 
-  // Dynamic Museum data (from localStorage if edited by admin, or initial JSON)
+  // Dynamic Museum data loaded from database based on ?id= or ?room= URL parameter
   const [currentMuseumData, setCurrentMuseumData] = useState(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('custom_museum_data')
-      if (saved) {
-        try {
-          return JSON.parse(saved)
-        } catch (e) {}
-      }
+      const params = new URLSearchParams(window.location.search)
+      const museumId = params.get('id') || params.get('room')
+      return getMuseumById(museumId)
     }
-    return initialMuseumData
+    return getMuseumById('ali-malika')
   })
 
   // Multiplayer Hook
@@ -51,8 +49,19 @@ export default function App() {
     }
   }, [sendMyTransform])
 
-  // Distance proximity for waltz prompt
+  // Distance proximity triggers
   const [canInviteWaltz, setCanInviteWaltz] = useState(false)
+  const [nearTable, setNearTable] = useState(false)
+
+  // Secret ?admin=true URL parameter check
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      if (params.get('admin') === 'true') {
+        toggleAdmin()
+      }
+    }
+  }, [toggleAdmin])
 
   // Loading simulation
   useEffect(() => {
@@ -88,6 +97,7 @@ export default function App() {
               partnerConnected={partnerConnected}
               isDancing={waltzStatus === 'dancing'}
               onProximityChange={setCanInviteWaltz}
+              onNearTable={setNearTable}
             />
           </Suspense>
         </Canvas>
@@ -102,12 +112,14 @@ export default function App() {
             data={currentMuseumData}
             partnerConnected={partnerConnected}
             myRole={myRole}
+            nearTable={nearTable}
           />
           {isMobile && <MobileControls />}
 
-          {/* Interactive Waltz Invitation & Dance UI */}
+          {/* Interactive Waltz Invitation & Table Sitting UI */}
           <WaltzModal
             canInvite={canInviteWaltz}
+            nearTable={nearTable}
             waltzStatus={waltzStatus}
             partnerRole={partnerRole}
             onInvite={inviteWaltz}
@@ -118,10 +130,17 @@ export default function App() {
       )}
       {gameState === 'finale' && <FinaleScreen data={currentMuseumData} />}
 
-      {/* Photo overlay */}
+      {/* Photo & Video Overlay */}
       {activePhoto && <PhotoOverlay />}
 
-      {/* Admin Panel (Password Protected: 7777) */}
+      {/* Background YouTube Audio Player (Separate for Museum & Waltz) */}
+      <YouTubePlayer
+        museumMusicUrl={currentMuseumData.museumMusicUrl || currentMuseumData.youtubeUrl}
+        waltzMusicUrl={currentMuseumData.waltzMusicUrl || 'https://www.youtube.com/watch?v=LVkEu1J8boo'}
+        isDancing={waltzStatus === 'dancing'}
+      />
+
+      {/* Invisible Admin Panel (Password Protected: Jasurbek2006) */}
       <AdminPanel
         isOpen={adminOpen}
         onClose={toggleAdmin}

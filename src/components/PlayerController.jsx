@@ -1,28 +1,32 @@
-import React, { useRef, useEffect, useCallback } from 'react'
+import React, { useRef, useEffect } from 'react'
 import { useThree, useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { useMuseumStore } from '../store'
 
 // Museum boundaries
 const BOUNDS = {
-  minX: -3.5,
-  maxX: 3.5,
+  minX: -3.8,
+  maxX: 3.8,
   minZ: -41,
   maxZ: 5.5,
 }
 
-const MOVE_SPEED = 3.5
+const MOVE_SPEED = 3.6
 const LOOK_SPEED = 0.002
 const PLAYER_HEIGHT = 1.6
 
-export default function PlayerController() {
+export default function PlayerController({ myRole = 'boy' }) {
   const { camera, gl } = useThree()
   const isMobile = useMuseumStore((s) => s.isMobile)
   const activePhoto = useMuseumStore((s) => s.activePhoto)
   const gameState = useMuseumStore((s) => s.gameState)
+  const isSitting = useMuseumStore((s) => s.isSitting)
+  const cameraMode = useMuseumStore((s) => s.cameraMode)
+  const toggleCameraMode = useMuseumStore((s) => s.toggleCameraMode)
 
   const keys = useRef({})
   const euler = useRef(new THREE.Euler(0, 0, 0, 'YXZ'))
+  const playerPosition = useRef(new THREE.Vector3(0, 0, 3))
   const velocity = useRef(new THREE.Vector3())
   const isPointerLocked = useRef(false)
   const touchStart = useRef({ x: 0, y: 0 })
@@ -30,10 +34,11 @@ export default function PlayerController() {
 
   // Initialize camera position
   useEffect(() => {
-    camera.position.set(0, PLAYER_HEIGHT, 3)
+    playerPosition.current.set(myRole === 'boy' ? -0.4 : 0.4, 0, 3)
+    camera.position.set(playerPosition.current.x, PLAYER_HEIGHT, playerPosition.current.z)
     camera.rotation.set(0, 0, 0)
     euler.current.set(0, 0, 0, 'YXZ')
-  }, [camera])
+  }, [camera, myRole])
 
   // Keyboard events
   useEffect(() => {
@@ -42,6 +47,9 @@ export default function PlayerController() {
       if (e.code === 'Escape') {
         const setActivePhoto = useMuseumStore.getState().setActivePhoto
         setActivePhoto(null)
+      }
+      if (e.code === 'KeyV') {
+        toggleCameraMode()
       }
     }
     const onKeyUp = (e) => { keys.current[e.code] = false }
@@ -52,7 +60,7 @@ export default function PlayerController() {
       window.removeEventListener('keydown', onKeyDown)
       window.removeEventListener('keyup', onKeyUp)
     }
-  }, [])
+  }, [toggleCameraMode])
 
   // Pointer lock for desktop
   useEffect(() => {
@@ -96,8 +104,7 @@ export default function PlayerController() {
 
     const onTouchStart = (e) => {
       const touch = e.touches[e.touches.length - 1]
-      // Right half = camera look
-      if (touch.clientX > window.innerWidth * 0.5) {
+      if (touch.clientX > window.innerWidth * 0.4) {
         touchStart.current = { x: touch.clientX, y: touch.clientY }
       }
     }
@@ -105,7 +112,7 @@ export default function PlayerController() {
     const onTouchMove = (e) => {
       for (let i = 0; i < e.touches.length; i++) {
         const touch = e.touches[i]
-        if (touch.clientX > window.innerWidth * 0.4) {
+        if (touch.clientX > window.innerWidth * 0.35) {
           const dx = touch.clientX - touchStart.current.x
           const dy = touch.clientY - touchStart.current.y
           euler.current.y -= dx * 0.003
@@ -133,6 +140,26 @@ export default function PlayerController() {
   // Movement loop
   useFrame((_, delta) => {
     if (activePhoto || gameState !== 'playing') return
+
+    // If sitting at table, lock position to chair
+    if (isSitting) {
+      const chairX = myRole === 'boy' ? -0.9 : 0.9
+      const chairZ = -12 // Table position in gallery
+      playerPosition.current.set(chairX, 0, chairZ)
+
+      if (cameraMode === 'third') {
+        camera.position.set(chairX, 1.6, chairZ + 1.8)
+        camera.lookAt(chairX, 1.2, chairZ)
+      } else {
+        camera.position.set(chairX, 1.3, chairZ)
+        camera.quaternion.setFromEuler(euler.current)
+      }
+
+      if (window.__sendMyTransform) {
+        window.__sendMyTransform(playerPosition.current, euler.current.y, 'sitting')
+      }
+      return
+    }
 
     const dt = Math.min(delta, 0.1)
     const speed = MOVE_SPEED * dt
@@ -166,24 +193,36 @@ export default function PlayerController() {
     velocity.current.x = (moveX * right.x + moveZ * forward.x) * speed
     velocity.current.z = (moveX * right.z + moveZ * forward.z) * speed
 
-    // Update position with bounds
-    let newX = camera.position.x + velocity.current.x
-    let newZ = camera.position.z + velocity.current.z
+    // Update player position with bounds
+    let newX = playerPosition.current.x + velocity.current.x
+    let newZ = playerPosition.current.z + velocity.current.z
 
     newX = Math.max(BOUNDS.minX, Math.min(BOUNDS.maxX, newX))
     newZ = Math.max(BOUNDS.minZ, Math.min(BOUNDS.maxZ, newZ))
 
-    camera.position.x = newX
-    camera.position.y = PLAYER_HEIGHT
-    camera.position.z = newZ
+    playerPosition.current.x = newX
+    playerPosition.current.z = newZ
 
-    // Apply rotation
-    camera.quaternion.setFromEuler(euler.current)
+    // Camera placement: 1st person vs 3rd person
+    if (cameraMode === 'third') {
+      // 3rd Person: camera hovers behind avatar
+      const cameraOffset = new THREE.Vector3(0, 1.2, 2.2).applyEuler(new THREE.Euler(0, euler.current.y, 0))
+      camera.position.x = playerPosition.current.x + cameraOffset.x
+      camera.position.y = PLAYER_HEIGHT + 0.3
+      camera.position.z = playerPosition.current.z + cameraOffset.z
+      camera.quaternion.setFromEuler(euler.current)
+    } else {
+      // 1st Person: camera at head level
+      camera.position.x = newX
+      camera.position.y = PLAYER_HEIGHT
+      camera.position.z = newZ
+      camera.quaternion.setFromEuler(euler.current)
+    }
 
     // Broadcast position to partner via multiplayer
     if (window.__sendMyTransform) {
       const isMoving = len > 0.05
-      window.__sendMyTransform(camera.position, euler.current.y, isMoving ? 'walking' : 'idle')
+      window.__sendMyTransform(playerPosition.current, euler.current.y, isMoving ? 'walking' : 'idle')
     }
   })
 
